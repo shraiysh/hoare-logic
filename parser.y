@@ -21,8 +21,11 @@ int sym[26]; /* symbol table */
 %token <iValue> INTEGER
 %token <sIndex> VARIABLE
 %token WHILE IF PRINT
+%token NOT AND OR
 %nonassoc IFX
 %nonassoc ELSE
+
+%left NOT AND OR
 %left GE LE EQ NE '>' '<'
 %left '+' '-'
 %left '*' '/'
@@ -67,6 +70,9 @@ expr:
   | expr NE expr { $$ = opr(NE, 2, $1, $3); }
   | expr EQ expr { $$ = opr(EQ, 2, $1, $3); }
   | '(' expr ')' { $$ = $2; }
+  | expr AND expr {$$ = opr(AND, 2, $1, $3); }
+  | expr OR expr { $$ = opr(OR, 2, $1, $3); }
+  | NOT expr { $$ = opr(NOT, 1, $2); }
   ;
 
 %%

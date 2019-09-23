@@ -22,6 +22,7 @@ void yyerror(char *);
 [-()<>=+*/;{}.] {
   return *yytext;
   }
+
 ">=" return GE;
 "<=" return LE;
 "==" return EQ;
@@ -30,6 +31,9 @@ void yyerror(char *);
 "if" return IF;
 "else" return ELSE;
 "print" return PRINT;
+"&&" return AND;
+"||" return OR;
+"~" return NOT;
 
 [ \t\n]+ ; /* ignore whitespace */
 
