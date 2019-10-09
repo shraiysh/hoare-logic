@@ -7,14 +7,19 @@ void yyerror(char *);
 
 %%
 
+"int" return INT;
+"bool" return BOOLEAN;
+
 [a-z] {
   yylval.sIndex = *yytext - 'a';
   return VARIABLE;
   }
+
 0 {
   yylval.iValue = atoi(yytext);
   return INTEGER;
   }
+  
 [1-9][0-9]* {
   yylval.iValue = atoi(yytext);
   return INTEGER;

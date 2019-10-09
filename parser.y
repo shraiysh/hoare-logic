@@ -5,22 +5,26 @@
 #include "include.h"
 /* prototypes */
 nodeType *opr(int oper, int nops, ...);
-nodeType *id(int i);
+nodeType *id(int i, char ch);
 nodeType *con(int value);
 void freeNode(nodeType *p);
 int ex(nodeType *p);
 int yylex(void);
 void yyerror(char *s);
-int sym[26]; /* symbol table */
+// int sym[26]; /* symbol table */
+conNodeType sym[26];
+
 %}
 %union {
  int iValue; /* integer value */
  char sIndex; /* symbol table index */
  nodeType *nPtr; /* node pointer */
 };
+
+%token BOOLEAN INT
 %token <iValue> INTEGER
 %token <sIndex> VARIABLE
-%token WHILE IF PRINT
+%token WHILE IF PRINT ASSGN
 %nonassoc IFX
 %nonassoc ELSE
 %left GE LE EQ NE '>' '<'
@@ -41,7 +45,9 @@ stmt:
   ';' { $$ = opr(';', 2, NULL, NULL); }
   | expr ';' { $$ = $1; }
   | PRINT expr ';' { $$ = opr(PRINT, 1, $2); }
-  | VARIABLE '=' expr ';' { $$ = opr('=', 2, id($1), $3); }
+  | VARIABLE '=' expr ';' { $$ = opr('=', 2, id($1, 'o'), $3); }
+  | INT VARIABLE '=' expr ';' { $$ = opr( INT, 2, id($2, 'i'), $4); }
+  | BOOLEAN VARIABLE '=' expr ';' { $$ = opr( BOOLEAN, 2, id($2, 'b'), $4); }
   | WHILE '(' expr ')' stmt { $$ = opr(WHILE, 2, $3, $5); }
   | IF '(' expr ')' stmt %prec IFX { $$ = opr(IF, 2, $3, $5); }
   | IF '(' expr ')' stmt ELSE stmt
@@ -54,7 +60,7 @@ stmt_list:
   ;
 expr:
   INTEGER { $$ = con($1); }
-  | VARIABLE { $$ = id($1); }
+  | VARIABLE { $$ = id($1, 'o'); }
   | '-' expr %prec UMINUS { $$ = opr(UMINUS, 1, $2); }
   | expr '+' expr { $$ = opr('+', 2, $1, $3); }
   | expr '-' expr { $$ = opr('-', 2, $1, $3); }
@@ -81,7 +87,8 @@ nodeType *con(int value) {
   p->con.value = value;
   return p;
 }
-nodeType *id(int i) {
+
+nodeType *id(int i, char ch) {
   nodeType *p;
   /* allocate node */
   if ((p = (nodeType*)malloc(sizeof(nodeType))) == NULL)
@@ -89,8 +96,10 @@ nodeType *id(int i) {
   /* copy information */
   p->type = typeId;
   p->id.i = i;
+  p->id.dtype = ch;
   return p;
 }
+
 nodeType *opr(int oper, int nops, ...) {
   va_list ap;
   nodeType *p;

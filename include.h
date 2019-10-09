@@ -3,11 +3,13 @@ typedef enum { typeCon, typeId, typeOpr } nodeEnum;
 /* constants */
 typedef struct {
   int value; /* value of constant */
+  char dtype;
 } conNodeType;
 
 /* identifiers */
 typedef struct {
   int i; /* subscript to sym array */
+  char dtype;
 } idNodeType;
 
 /* operators */
@@ -26,4 +28,5 @@ typedef struct nodeTypeTag {
   };
 } nodeType;
 
-extern int sym[26]; 
+
+extern conNodeType sym[26]; 
