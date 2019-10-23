@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include "include.h"
-#include "y.tab.h"
+#include "y.tab.hpp"
+
+#include <z3++.h>
+
 conNodeType ex(nodeType *p) {
   conNodeType res = {0, 'o'};
   if (!p) return res;

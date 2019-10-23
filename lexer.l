@@ -1,7 +1,7 @@
 %{
 #include <stdlib.h>
 #include "include.h"
-#include "y.tab.h"
+#include "y.tab.hpp"
 void yyerror(char *);
 %}
 
