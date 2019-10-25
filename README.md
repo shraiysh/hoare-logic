@@ -1,33 +1,38 @@
 # Hoare Logic
 
 ### Sample Code
- * There can be only 26 variables. Redeclaration of a variable over-writes the previous value and datatype
- * `print x` prints both value and type (`i` for int and `b` for bool)
- * Variables must be initialized
- * If a variable is not declared already, type is inferred from rhs
+ * There can be only 26 variables. Anyype of assignment is possible after declaration only.
+ * Two dataypes ```int``` and ```bool```. 
+ * ```pre``` stands for precondition. ```post``` for post condition and ```inv``` for loop invariant.
+ * ```@``` stands for universal quantifier and ```#``` stands for existensial quantifier.
+ * Datatypes of free variables need to be mentioned.
+
 ```
-int x = 0;
-bool y = (x < 3);
-while (x < 3) {
- print x;
- x = x + 1;
+pre {
+	int x;
+	int y;
+	(x>0) && (y>0)&& (x>=y);
 }
+
+int r;
+r = x;
+
+inv (x>0) && (y>0)&& (x>=y) && (r>=0) && (r<=x);
+while(r>=y){
+ 	r = r - y;
+}
+
+post (x>0) && (y>0)&& (x>=y) && (r>=0) && (r<y) && (r>=0) && (r<=x);
 ```
 
 ### To Run
 ```bash
-lex lexer.h
-yacc -d parser.h
+make clean
+make
+./a.out < tests/test2.txt
 ```
-#### Run the code
-```bash
-gcc lex.yy.c y.tab.c -w interpreter.c
-```
-
-#### Generate code for hypothetical stack based machine
-```bash
-gcc lex.yy.c tab.c -w compiler.c
-```
+### Output
+* Proves the correctness of hoare-triple. Provides counter-example if fails.
 
 ### Reference
 * http://ftp.mozgan.me/Compiler_Manuals/LexAndYaccTutorial.pdf

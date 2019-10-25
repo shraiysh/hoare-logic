@@ -28,5 +28,4 @@ typedef struct nodeTypeTag {
   };
 } nodeType;
 
-
-extern conNodeType sym[26]; 
+extern char dtype[26];
