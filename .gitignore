@@ -1,6 +1,6 @@
 *.swp
 *.out
-*.yy.c
-*.tab.c
-*.tab.h
-
+*.yy.cpp
+*.tab.cpp
+*.tab.hpp
+build/
