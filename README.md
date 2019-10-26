@@ -25,6 +25,22 @@ while(r>=y){
 post (x>0) && (y>0)&& (x>=y) && (r>=0) && (r<y) && (r>=0) && (r<=x);
 ```
 
+```
+pre {
+	int x;
+	(x>0); 
+}
+
+if (x%2 == 0){
+	x = x+1;
+}
+else {
+	x = x+2;
+}
+
+post x%2 == 1;
+```
+
 ### To Run
 ```bash
 make clean
