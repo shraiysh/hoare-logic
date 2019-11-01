@@ -9,6 +9,7 @@ typedef struct {
 /* identifiers */
 typedef struct {
   int i; /* subscript to sym array */
+  int j;
   char dtype;
 } idNodeType;
 

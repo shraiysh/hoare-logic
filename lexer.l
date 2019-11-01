@@ -37,6 +37,10 @@ void yyerror(char *);
 [-()<>=+*/%;{}.] {
   return *yytext;
   }
+
+"[" return *yytext;
+"]" return *yytext;
+
 ">=" return GE;
 "<=" return LE;
 "==" return EQ;

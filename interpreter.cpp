@@ -6,7 +6,8 @@
 #include <z3++.h>
 using namespace z3;
 std::vector<nodeType*> stmts;
-std::vector<expr> sym;
+std::vector<std::vector<expr>> sym(26);
+
 
 context c;
 
@@ -17,23 +18,24 @@ void add(nodeType* p){
 
 
 expr make_condition(nodeType *p){
+  if(p == NULL) return c.bool_val(true);
   switch(p->type) {
     case typeCon: { if (p->con.dtype == 'i') return c.int_val(p->con.value);
                     else return c.bool_val(p->con.value);
     }
-    case typeId: return sym[p->id.i];
+    case typeId: return sym[p->id.i][p->id.j];
 
     case typeOpr:
 
       switch(p->opr.oper) {
-        case INT: return sym[p->opr.op[0]->id.i];
-        case BOOLEAN: return sym[p->opr.op[0]->id.i];
+        case INT: return sym[p->opr.op[0]->id.i][p->opr.op[0]->id.j];
+        case BOOLEAN: return sym[p->opr.op[0]->id.i][p->opr.op[0]->id.j];
 
-        case FORALL: return forall(sym[p->opr.op[0]->id.i], make_condition(p->opr.op[1]));
-        case EXISTS: return exists(sym[p->opr.op[0]->id.i], make_condition(p->opr.op[1]));
+        case FORALL: return forall(sym[p->opr.op[0]->id.i][p->opr.op[0]->id.j], make_condition(p->opr.op[1]));
+        case EXISTS: return exists(sym[p->opr.op[0]->id.i][p->opr.op[0]->id.j], make_condition(p->opr.op[1]));
 
         case ';': make_condition(p->opr.op[0]); return make_condition(p->opr.op[1]);
-        case '=': std::cout<<"assign\n"; return sym[p->opr.op[0]->id.i] = make_condition(p->opr.op[1]);
+        case '=': std::cout<<"assign\n"; return sym[p->opr.op[0]->id.i][p->opr.op[0]->id.j] = make_condition(p->opr.op[1]);
         case UMINUS: return -make_condition(p->opr.op[0]);
         case '+': return make_condition(p->opr.op[0]) + make_condition(p->opr.op[1]);
         case '-': return make_condition(p->opr.op[0]) - make_condition(p->opr.op[1]);
@@ -51,9 +53,39 @@ expr make_condition(nodeType *p){
         case NOT: return !make_condition(p->opr.op[0]);
       }
   }
-  
+}
 
+std::vector<std::vector<int>> intSym(26);
+
+int ex(nodeType *p) {
+  if (!p) return 0;
+  switch(p->type) {
+    case typeCon: return p->con.value;
+    case typeId: return intSym[p->id.i][p->id.j];
+    case typeOpr:
+      switch(p->opr.oper) {
+        case ';': ex(p->opr.op[0]); return ex(p->opr.op[1]);
+        case '=': return intSym[p->opr.op[0]->id.i][p->opr.op[0]->id.j] = ex(p->opr.op[1]);
+        case UMINUS: return -ex(p->opr.op[0]);
+        case '+': return ex(p->opr.op[0]) + ex(p->opr.op[1]);
+        case '-': return ex(p->opr.op[0]) - ex(p->opr.op[1]);
+        case '*': return ex(p->opr.op[0]) * ex(p->opr.op[1]);
+        case '/': return ex(p->opr.op[0]) / ex(p->opr.op[1]);
+      }
+  }
+  return 0;
 } 
+
+void updateSize(int index, int size) {
+  while(sym[index].size() < size) {
+    char s[] = {(char)(index+'a'), (char)(sym[index].size() + '0')};
+    sym[index].push_back(c.int_const(s));
+  }
+    // sym[index].resize(size);
+  if(intSym[index].size() < size) {
+    intSym[index].resize(size);
+  }
+}
 
 expr weakest_pre(nodeType* p, expr wp){
   switch(p->type) {
@@ -69,7 +101,7 @@ expr weakest_pre(nodeType* p, expr wp){
         case ';': return weakest_pre(p->opr.op[0],weakest_pre(p->opr.op[1],wp));
 
         case '=': {
-          Z3_ast from[] = { sym[p->opr.op[0]->id.i] };
+          Z3_ast from[] = { sym[p->opr.op[0]->id.i][0] };
           Z3_ast to[]   = { make_condition(p->opr.op[1]) };
           expr new_f(c);
           new_f = to_expr(c, Z3_substitute(c, wp, 1, from, to));
@@ -98,8 +130,10 @@ expr weakest_pre(nodeType* p, expr wp){
 void execute(){
   for(int i=0;i<26;i++){
     char s[] = {i+97};
-    if (dtype[i] == 'i') sym.push_back(c.int_const(s));
-    else sym.push_back(c.bool_const(s));
+    if (dtype[i] == 'i' && sym[i].empty()) {
+      sym[i] = std::vector<expr>({c.int_const(s)});
+    }
+    else if(sym[i].empty()) sym[i] = std::vector<expr>({c.bool_const(s)});
   }
   std::reverse(stmts.begin(),stmts.end());
 

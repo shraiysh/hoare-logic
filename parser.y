@@ -1,5 +1,6 @@
 %{
 #include <stdio.h>
+#include <iostream>
 #include <stdlib.h>
 #include <stdarg.h>
 #include "include.h"
@@ -7,11 +8,14 @@
 /* prototypes */
 nodeType *opr(int oper, int nops, ...);
 nodeType *id(int i, char ch);
+nodeType *arrId(int i, int j, char ch);
 nodeType *con(int value,char ch);
 void freeNode(nodeType *p);
 // int ex(nodeType *p);
 void add(nodeType *p);
 void execute();
+int ex(nodeType *p);
+void updateSize(int index, int size);
 int yylex(void);
 void yyerror(char *s);
 char dtype[26] = {0};
@@ -23,7 +27,7 @@ char dtype[26] = {0};
  nodeType *nPtr; /* node pointer */
 };
 
-%token BOOLEAN INT PRE POST TRUE FALSE
+%token BOOLEAN INT PRE POST TRUE FALSE ARR_VAR
 %token <iValue> INTEGER
 %token <sIndex> VARIABLE
 %token WHILE IF PRINT ASSGN FORALL EXISTS INV
@@ -58,8 +62,10 @@ stmt:
   | expr ';' { $$ = $1; }
   | PRINT expr ';' { $$ = opr(PRINT, 1, $2); }
   | VARIABLE '=' expr ';' { $$ = opr('=', 2, id($1, 'o'), $3); }
-  | INT VARIABLE ';' { $$ = opr( INT, 1, id($2, 'i')); dtype[$2] = 'i';}
-  | BOOLEAN VARIABLE ';' { $$ = opr( BOOLEAN, 1, id($2, 'b')); dtype[$2] = 'b'; }
+  | VARIABLE '[' expr ']' '=' expr ';' { $$ = opr('=', 2, arrId($1, ex($3), 'o'), $6); }
+  | INT VARIABLE ';' { dtype[$2] = 'i'; $$ = opr( INT, 1, id($2, 'i')); }
+  | INT VARIABLE '[' expr ']' ';' { std::cout << "Hello" << ex($4) << "\n"; updateSize($2, ex($4)); /*$$ = opr(ARR_VAR, 1, arrId($2, ex($4), 'i'));*/}
+  | BOOLEAN VARIABLE ';' { dtype[$2] = 'b'; $$ = opr( BOOLEAN, 1, id($2, 'b'));  }
   | INV stmt WHILE '(' expr ')' stmt { $$ = opr(WHILE, 3, $5, $2,$7); }
   | IF '(' expr ')' stmt %prec IFX { $$ = opr(IF, 2, $3, $5); }
   | IF '(' expr ')' stmt ELSE stmt
@@ -77,6 +83,7 @@ expr:
   | FALSE { $$ = con(0,'b'); }
   | TRUE { $$ = con(1,'b'); }
   | VARIABLE { $$ = id($1, 'o'); }
+  | VARIABLE '[' expr ']' { $$ = arrId($1, ex($3), 'o'); }
   | '-' expr %prec UMINUS { $$ = opr(UMINUS, 1, $2); }
   | expr '+' expr { $$ = opr('+', 2, $1, $3); }
   | expr '-' expr { $$ = opr('-', 2, $1, $3); }
@@ -109,7 +116,11 @@ nodeType *con(int value,char ch) {
   return p;
 }
 
-nodeType *id(int i, char ch) {
+nodeType* id(int i, char ch) {
+  return arrId(i, 0, ch);
+}
+
+nodeType *arrId(int i, int j, char ch) {
   nodeType *p;
   /* allocate node */
   if ((p = (nodeType*)malloc(sizeof(nodeType))) == NULL)
@@ -117,6 +128,7 @@ nodeType *id(int i, char ch) {
   /* copy information */
   p->type = typeId;
   p->id.i = i;
+  p->id.j = j;
   p->id.dtype = ch;
   return p;
 }
