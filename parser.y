@@ -64,7 +64,7 @@ stmt:
   | VARIABLE '=' expr ';' { $$ = opr('=', 2, id($1, 'o'), $3); }
   | VARIABLE '[' expr ']' '=' expr ';' { $$ = opr('=', 2, arrId($1, ex($3), 'o'), $6); }
   | INT VARIABLE ';' { dtype[$2] = 'i'; $$ = opr( INT, 1, id($2, 'i')); }
-  | INT VARIABLE '[' expr ']' ';' { std::cout << "Hello" << ex($4) << "\n"; updateSize($2, ex($4)); /*$$ = opr(ARR_VAR, 1, arrId($2, ex($4), 'i'));*/}
+  | INT VARIABLE '[' expr ']' ';' { updateSize($2, ex($4)); /*$$ = opr(ARR_VAR, 1, arrId($2, ex($4), 'i'));*/}
   | BOOLEAN VARIABLE ';' { dtype[$2] = 'b'; $$ = opr( BOOLEAN, 1, id($2, 'b'));  }
   | INV stmt WHILE '(' expr ')' stmt { $$ = opr(WHILE, 3, $5, $2,$7); }
   | IF '(' expr ')' stmt %prec IFX { $$ = opr(IF, 2, $3, $5); }

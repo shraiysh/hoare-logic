@@ -78,7 +78,7 @@ int ex(nodeType *p) {
 
 void updateSize(int index, int size) {
   while(sym[index].size() < size) {
-    char s[] = {(char)(index+'a'), (char)(sym[index].size() + '0')};
+    char s[] = {(char)(index+'a'), '[', (char)(sym[index].size() + '0'), ']'};
     sym[index].push_back(c.int_const(s));
   }
     // sym[index].resize(size);
