@@ -81,8 +81,14 @@ expr weakest_pre(nodeType* p, expr wp){
 
         case ';': return weakest_pre(p->opr.op[0],weakest_pre(p->opr.op[1],wp));
 
-        case ARR_ASSGN:
-          return wp && arr[p->opr.op[0]->id.i] == store(arr[p->opr.op[0]->id.i], make_condition(p->opr.op[1]), make_condition(p->opr.op[2]));
+        case ARR_ASSGN: {
+          Z3_ast from1[] = { arr[p->opr.op[0]->id.i] };
+          Z3_ast to1[]   = { store(arr[p->opr.op[0]->id.i], make_condition(p->opr.op[1]), make_condition(p->opr.op[2])) };
+          expr new_f1(c);
+          new_f1 = to_expr(c, Z3_substitute(c, wp, 1, from1, to1));
+          return new_f1;
+        }
+          // return wp && arr[p->opr.op[0]->id.i] == store(arr[p->opr.op[0]->id.i], make_condition(p->opr.op[1]), make_condition(p->opr.op[2]));
 
         case '=': {
           Z3_ast from[] = { sym[p->opr.op[0]->id.i] };

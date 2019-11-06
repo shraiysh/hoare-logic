@@ -1,0 +1,26 @@
+pre {
+int x[10];
+true;}
+
+int m;
+max = x[0];
+int i;
+i=1;
+
+inv { int j;
+	@j. (~(j>=0 && j<i)) || (max >= x[j]);
+}
+
+while (i<10){
+	if (x[i] > max){
+		max = x[i];
+	}
+	else {
+		max = max;
+	}
+	i = i +1;
+}
+
+post {
+	(i>=10) && (@j. (~(j>=0 && j<i)) || (max >= x[j]));
+}
