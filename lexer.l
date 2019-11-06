@@ -25,6 +25,11 @@ void yyerror(char *);
   return VARIABLE;
   }
 
+[A-Z] {
+  yylval.sIndex = *yytext - 'A';
+  return ARR_VAR;
+  }
+
 0 {
   yylval.iValue = atoi(yytext);
   return INTEGER;
@@ -37,6 +42,9 @@ void yyerror(char *);
 [-()<>=+*/%;{}.] {
   return *yytext;
   }
+
+"[" return *yytext;
+"]" return *yytext;
 ">=" return GE;
 "<=" return LE;
 "==" return EQ;

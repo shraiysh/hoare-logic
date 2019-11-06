@@ -1,0 +1,26 @@
+pre {
+int n;
+n>0;}
+
+int m;
+m = X[0];
+int i;
+i=1;
+
+inv { int j;
+	@j. (~(j>=0 && j<i)) || (m >= X[j]);
+}
+
+while (i<n){
+	if (X[i] > m){
+		m = X[i];
+	}
+	else {
+		m = m;
+	}
+	i = i +1;
+}
+
+post {
+	@j. (i>=n) && ((j<0) || (j>=i)|| (m >= X[j]));
+}
