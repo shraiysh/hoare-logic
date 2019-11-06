@@ -66,8 +66,7 @@ stmt:
   | IF '(' expr ')' stmt ELSE stmt
   { $$ = opr(IF, 3, $3, $5, $7); }
   | '{' stmt_list '}' { $$ = $2; }
-  | FORALL VARIABLE '.' stmt {$$ = opr( FORALL, 2, id($2, 'o'), $4);}
-  | EXISTS VARIABLE '.' stmt {$$ = opr( EXISTS, 2, id($2, 'o'), $4);}
+  
   ;
 stmt_list:
   stmt { $$ = $1; }
@@ -95,6 +94,8 @@ expr:
   | expr OR expr { $$ = opr(OR, 2, $1, $3); }
   | NOT expr { $$ = opr(NOT, 1, $2); }
   | '(' expr ')' { $$ = $2; }
+  | FORALL VARIABLE '(' expr ')' {$$ = opr( FORALL, 2, id($2, 'o'), $4);}
+  | EXISTS VARIABLE '(' expr ')' {$$ = opr( EXISTS, 2, id($2, 'o'), $4);}
   ;
 
 %%
