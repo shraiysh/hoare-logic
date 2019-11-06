@@ -4,3 +4,9 @@
 *.tab.cpp
 *.tab.hpp
 build/
+
+.vscode/
+
+*.yy.c
+*.tab.c
+*.tab.h

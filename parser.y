@@ -25,8 +25,8 @@ char dtype[26] = {0};
 
 %token BOOLEAN INT PRE POST TRUE FALSE
 %token <iValue> INTEGER
-%token <sIndex> VARIABLE
-%token WHILE IF PRINT ASSGN FORALL EXISTS INV
+%token <sIndex> VARIABLE ARR_VAR
+%token WHILE IF PRINT ASSGN FORALL EXISTS INV ARR_ACCESS ARR_ASSGN
 %nonassoc IFX
 %nonassoc ELSE
 %left NOT AND OR
@@ -58,6 +58,7 @@ stmt:
   | expr ';' { $$ = $1; }
   | PRINT expr ';' { $$ = opr(PRINT, 1, $2); }
   | VARIABLE '=' expr ';' { $$ = opr('=', 2, id($1, 'o'), $3); }
+  | ARR_VAR '[' expr ']' '=' expr ';' { $$ = opr(ARR_ASSGN, 3, id($1, 'o'), $3, $6); }
   | INT VARIABLE ';' { $$ = opr( INT, 1, id($2, 'i')); dtype[$2] = 'i';}
   | BOOLEAN VARIABLE ';' { $$ = opr( BOOLEAN, 1, id($2, 'b')); dtype[$2] = 'b'; }
   | INV stmt WHILE '(' expr ')' stmt { $$ = opr(WHILE, 3, $5, $2,$7); }
@@ -77,6 +78,7 @@ expr:
   | FALSE { $$ = con(0,'b'); }
   | TRUE { $$ = con(1,'b'); }
   | VARIABLE { $$ = id($1, 'o'); }
+  | ARR_VAR '[' expr ']' { $$ = opr(ARR_ACCESS, 2, id($1, 'o'), $3); }
   | '-' expr %prec UMINUS { $$ = opr(UMINUS, 1, $2); }
   | expr '+' expr { $$ = opr('+', 2, $1, $3); }
   | expr '-' expr { $$ = opr('-', 2, $1, $3); }

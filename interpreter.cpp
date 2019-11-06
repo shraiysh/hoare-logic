@@ -10,6 +10,10 @@ std::vector<expr> sym;
 
 context c;
 
+sort Int = c.int_sort();
+sort MYARRAY = c.array_sort(Int, Int);
+
+std::vector<expr> arr;
 
 void add(nodeType* p){
   stmts.push_back(p);
@@ -17,6 +21,7 @@ void add(nodeType* p){
 
 
 expr make_condition(nodeType *p){
+  int index;
   switch(p->type) {
     case typeCon: { if (p->con.dtype == 'i') return c.int_val(p->con.value);
                     else return c.bool_val(p->con.value);
@@ -28,6 +33,14 @@ expr make_condition(nodeType *p){
       switch(p->opr.oper) {
         case INT: return sym[p->opr.op[0]->id.i];
         case BOOLEAN: return sym[p->opr.op[0]->id.i];
+
+        case ARR_ASSGN:
+          index = p->opr.op[0]->id.i;
+          arr[index] = store(arr[index], make_condition(p->opr.op[1]), make_condition(p->opr.op[2]));
+          return arr[index];
+        
+        case ARR_ACCESS:
+          return select(arr[p->opr.op[0]->id.i], make_condition(p->opr.op[1]));
 
         case FORALL: return forall(sym[p->opr.op[0]->id.i], make_condition(p->opr.op[1]));
         case EXISTS: return exists(sym[p->opr.op[0]->id.i], make_condition(p->opr.op[1]));
@@ -68,6 +81,9 @@ expr weakest_pre(nodeType* p, expr wp){
 
         case ';': return weakest_pre(p->opr.op[0],weakest_pre(p->opr.op[1],wp));
 
+        case ARR_ASSGN:
+          return wp && arr[p->opr.op[0]->id.i] == store(arr[p->opr.op[0]->id.i], make_condition(p->opr.op[1]), make_condition(p->opr.op[2]));
+
         case '=': {
           Z3_ast from[] = { sym[p->opr.op[0]->id.i] };
           Z3_ast to[]   = { make_condition(p->opr.op[1]) };
@@ -100,6 +116,10 @@ void execute(){
     char s[] = {i+97};
     if (dtype[i] == 'i') sym.push_back(c.int_const(s));
     else sym.push_back(c.bool_const(s));
+  }
+  for(int i=0;i<26;i++) {
+    char s[] = {i+'A'};
+    arr.push_back(c.constant(s, MYARRAY));
   }
   std::reverse(stmts.begin(),stmts.end());
 
