@@ -1,0 +1,18 @@
+pre {
+    int n;
+    n>0;
+}
+int t;
+int k;
+t=1;
+inv{
+    @k( ~(1<=k && k<=t-1) || A[k] == B[k]) && t<=n+1;
+}
+while(t<=n) {
+    B[t]=A[t];
+    t=t+1;
+}
+
+post {
+    @k( ~(1<=k && k<=n) || A[k]==B[k] ) && t==n+1 ;
+}
