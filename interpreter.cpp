@@ -113,8 +113,9 @@ expr weakest_pre(nodeType* p, expr wp){
               case unknown: exit(0);
             }
         }
+    }
   }
-}
+  return wp;
 }
 
 void execute(){
