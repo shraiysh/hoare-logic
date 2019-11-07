@@ -1,0 +1,30 @@
+pre {
+	int n;
+	
+	n > 0;
+}
+int x;
+int i;
+i=0;
+bool f;
+f = false;
+
+inv {
+	int j;
+	(~(#j( j>=0 && j<i && A[j]==x)) || f) && (i<=n);
+
+}
+
+while (i<n){
+	if (A[i] == x){
+		f = f || true;
+	}
+	else {
+		f = f || false;
+	}
+	i = i +1;
+}
+
+post {
+	~(#j( j>=0 && j<n && A[j]==x)) || f;
+}

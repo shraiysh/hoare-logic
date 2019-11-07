@@ -103,6 +103,7 @@ expr weakest_pre(nodeType* p, expr wp){
           expr cond = make_condition(p->opr.op[0]);
 
           expr conjecture = implies(inv && cond, weakest_pre(p->opr.op[2],inv)) && implies(inv && !cond,wp);
+          // std::cout<<conjecture<<std::endl;
           solver s(c);
           s.add(!conjecture);
           switch (s.check()) {
@@ -113,8 +114,10 @@ expr weakest_pre(nodeType* p, expr wp){
               case unknown: exit(0);
             }
         }
+    }
   }
-}
+  return wp;
+
 }
 
 void execute(){

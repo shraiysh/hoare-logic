@@ -1,0 +1,18 @@
+pre {
+	int n;
+	n>0;
+}
+
+int s;
+s= 0;
+int i;
+i=1;
+
+inv n>0 && (s == i*(i-1)/2);
+
+while (i!=n+1){
+	s = s + i;
+	i = i+1;
+}
+
+post n>0 && (s== n*(n+1)/2);
