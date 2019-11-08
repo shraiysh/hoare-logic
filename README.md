@@ -90,3 +90,4 @@ make
 ### Reference
 * https://www.cs.cmu.edu/~aldrich/courses/654-sp07/slides/7-hoare.pdf
 * http://ftp.mozgan.me/Compiler_Manuals/LexAndYaccTutorial.pdf
+* https://github.com/Z3Prover/z3
