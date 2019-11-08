@@ -75,41 +75,65 @@ expr weakest_pre(nodeType* p, expr wp){
 
       switch(p->opr.oper) {
 
-        case IF: 
-          return implies(make_condition(p->opr.op[0]), weakest_pre(p->opr.op[1],wp)) &&
-           implies(!make_condition(p->opr.op[0]), weakest_pre(p->opr.op[2],wp));
+        case IF: {
+          std::cout << "HANDLING IF\n";
+          auto true_conj = implies(make_condition(p->opr.op[0]), weakest_pre(p->opr.op[1],wp));
+          auto false_conj = implies(!make_condition(p->opr.op[0]), weakest_pre(p->opr.op[2],wp));
+          std::cout << "---------\nIF CONDITION:\n\tTRUE : " << true_conj;
+          std::cout << "\n\tFALSE : " << false_conj << "\n---------\n";
+          return true_conj && false_conj;
+        }
 
-        case ';': return weakest_pre(p->opr.op[0],weakest_pre(p->opr.op[1],wp));
+        case ';': {
+          // std::cout << "HANLDING SEMICOLON\n";
+          auto a = weakest_pre(p->opr.op[1],wp);
+          auto b = weakest_pre(p->opr.op[0],a);
+          // std::cout << "--------\nSEMICOLON: " << b << "\n--------\n";
+          return b;
+        }
 
         case ARR_ASSGN: {
+          std::cout << "HANDLING ASSIGNMENT\n";
           Z3_ast from1[] = { arr[p->opr.op[0]->id.i] };
           Z3_ast to1[]   = { store(arr[p->opr.op[0]->id.i], make_condition(p->opr.op[1]), make_condition(p->opr.op[2])) };
           expr new_f1(c);
           new_f1 = to_expr(c, Z3_substitute(c, wp, 1, from1, to1));
+          std::cout << "---------\nARRAY ASSIGNMENT:" << new_f1 << "\n---------\n";
           return new_f1;
         }
           // return wp && arr[p->opr.op[0]->id.i] == store(arr[p->opr.op[0]->id.i], make_condition(p->opr.op[1]), make_condition(p->opr.op[2]));
 
         case '=': {
+          std::cout << "HANDLING ASSIGNMENT\n";
           Z3_ast from[] = { sym[p->opr.op[0]->id.i] };
           Z3_ast to[]   = { make_condition(p->opr.op[1]) };
           expr new_f(c);
           new_f = to_expr(c, Z3_substitute(c, wp, 1, from, to));
+          std::cout << "---------\nASSIGNMENT:" << new_f << "\n---------\n";
           return new_f;
       }
 
         case WHILE:{
+          std::cout << "HANDLING WHILE\n";
           expr inv = make_condition(p->opr.op[1]);
           expr cond = make_condition(p->opr.op[0]);
 
-          expr conjecture = implies(inv && cond, weakest_pre(p->opr.op[2],inv)) && implies(inv && !cond,wp);
+          auto weak_pre_body = weakest_pre(p->opr.op[2],inv);
+          expr conjecture = implies(inv && cond, weak_pre_body) && implies(inv && !cond,wp);
+          std::cout << "WHILE ({Inv && B => weakest_pre(body)} && {Inv && !B => weakest_pre(after body)}): " << conjecture << "\n---------\n";
           // std::cout<<conjecture<<std::endl;
           solver s(c);
           s.add(!conjecture);
           switch (s.check()) {
               case unsat:   return inv;
               case sat:     { model m = s.get_model(); 
-                              std::cout << "Loop invariant failed, Counterexample:\n"<<m<<"\n"; 
+                              std::cout << "Loop invariant failed, Counterexample:\n";
+                              for (unsigned i = 0; i < m.size(); i++) {
+                                  func_decl v = m[i];
+                                  // this problem contains only constants
+                                  assert(v.arity() == 0); 
+                                  std::cout << v.name() << " = " << m.get_const_interp(v) << "\n";
+                              } 
                               exit(0); }
               case unknown: exit(0);
             }
@@ -149,7 +173,13 @@ void execute(){
   switch (s.check()) {
     case unsat:   std::cout << "Hoare triple is valid\n"; break;
     case sat:     { model m = s.get_model(); 
-                    std::cout << "Hoare triple is not valid, Counterexample:\n"<<m<<"\n"; 
+                    std::cout << "Hoare triple is not valid, Counterexample:\n";
+                    for (unsigned i = 0; i < m.size(); i++) {
+                        func_decl v = m[i];
+                        // this problem contains only constants
+                        assert(v.arity() == 0); 
+                        std::cout << v.name() << " = " << m.get_const_interp(v) << "\n";
+                    } 
                     break; }
     case unknown: std::cout << "unknown\n"; break;
   }
