@@ -54,7 +54,8 @@ void yyerror(char *);
 "else" return ELSE;
 "print" return PRINT;
 
-[ \t\n]+ ; /* ignore whitespace */
+\n  {lineno++;}
+[ \t]+ ; /* ignore whitespace */
 
 . yyerror("Unknown character");
 %%

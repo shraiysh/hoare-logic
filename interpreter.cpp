@@ -68,6 +68,10 @@ expr make_condition(nodeType *p){
 
 } 
 
+void pretty_print(int l1,expr wp){
+  std::cout<<"Between Line "<<l1<<" - "<<l1+1<<" holds: "<<wp<<std::endl<<std::endl;
+}
+
 expr weakest_pre(nodeType* p, expr wp){
   switch(p->type) {
 
@@ -76,51 +80,56 @@ expr weakest_pre(nodeType* p, expr wp){
       switch(p->opr.oper) {
 
         case IF: {
-          std::cout << "HANDLING IF\n";
-          auto true_conj = implies(make_condition(p->opr.op[0]), weakest_pre(p->opr.op[1],wp));
+          pretty_print(p->opr.lineno,wp);
+          // std::cout << "Line "<<p->opr.lineno<<": "<<wp<<"\n";
           auto false_conj = implies(!make_condition(p->opr.op[0]), weakest_pre(p->opr.op[2],wp));
-          std::cout << "---------\nIF CONDITION:\n\tTRUE : " << true_conj;
-          std::cout << "\n\tFALSE : " << false_conj << "\n---------\n";
+          auto true_conj = implies(make_condition(p->opr.op[0]), weakest_pre(p->opr.op[1],wp));
+          
+          // std::cout << "---------\nIF CONDITION:\n\tTRUE : " << true_conj;
+          // std::cout << "\n\tFALSE : " << false_conj << "\n---------\n";
           return true_conj && false_conj;
         }
 
         case ';': {
-          // std::cout << "HANLDING SEMICOLON\n";
+          // std::cout << "Line "<<p->opr.op[1]->opr.lineno<<": "<<wp<<"\n";
           auto a = weakest_pre(p->opr.op[1],wp);
+          // std::cout << "Line "<<p->opr.op[0]->opr.lineno<<": "<<a<<"\n";
           auto b = weakest_pre(p->opr.op[0],a);
-          // std::cout << "--------\nSEMICOLON: " << b << "\n--------\n";
+          pretty_print(p->opr.op[0]->opr.lineno-1,b);
+          // std::cout << "Line "<<p->opr.op[0]->opr.lineno-1<<": "<<b<<"\n";
           return b;
         }
 
         case ARR_ASSGN: {
-          std::cout << "HANDLING ASSIGNMENT\n";
+          pretty_print(p->opr.lineno,wp);
+          // std::cout << "Line "<<p->opr.lineno<<": "<<wp<<"\n";
           Z3_ast from1[] = { arr[p->opr.op[0]->id.i] };
           Z3_ast to1[]   = { store(arr[p->opr.op[0]->id.i], make_condition(p->opr.op[1]), make_condition(p->opr.op[2])) };
           expr new_f1(c);
           new_f1 = to_expr(c, Z3_substitute(c, wp, 1, from1, to1));
-          std::cout << "---------\nARRAY ASSIGNMENT:" << new_f1 << "\n---------\n";
           return new_f1;
         }
           // return wp && arr[p->opr.op[0]->id.i] == store(arr[p->opr.op[0]->id.i], make_condition(p->opr.op[1]), make_condition(p->opr.op[2]));
 
         case '=': {
-          std::cout << "HANDLING ASSIGNMENT\n";
+          pretty_print(p->opr.lineno,wp);
+          // std::cout << "Line "<<p->opr.lineno<<": "<<wp<<"\n";
           Z3_ast from[] = { sym[p->opr.op[0]->id.i] };
           Z3_ast to[]   = { make_condition(p->opr.op[1]) };
           expr new_f(c);
           new_f = to_expr(c, Z3_substitute(c, wp, 1, from, to));
-          std::cout << "---------\nASSIGNMENT:" << new_f << "\n---------\n";
           return new_f;
       }
 
         case WHILE:{
-          std::cout << "HANDLING WHILE\n";
+          pretty_print(p->opr.lineno,wp);
+          // std::cout << "Line "<<p->opr.lineno<<": "<<wp<<"\n";
           expr inv = make_condition(p->opr.op[1]);
           expr cond = make_condition(p->opr.op[0]);
 
           auto weak_pre_body = weakest_pre(p->opr.op[2],inv);
           expr conjecture = implies(inv && cond, weak_pre_body) && implies(inv && !cond,wp);
-          std::cout << "WHILE ({Inv && B => weakest_pre(body)} && {Inv && !B => weakest_pre(after body)}): " << conjecture << "\n---------\n";
+          //std::cout << "WHILE ({Inv && B => weakest_pre(body)} && {Inv && !B => weakest_pre(after body)}): " << conjecture << "\n---------\n";
           // std::cout<<conjecture<<std::endl;
           solver s(c);
           s.add(!conjecture);
@@ -140,6 +149,7 @@ expr weakest_pre(nodeType* p, expr wp){
         }
     }
   }
+  pretty_print(p->opr.lineno,wp);
   return wp;
 }
 
@@ -157,14 +167,16 @@ void execute(){
 
   expr pre_condition = make_condition(stmts[stmts.size()-1]->opr.op[0]);
   expr post_condition = make_condition(stmts[0]->opr.op[0]);
-  std::cout<<"Pre condition: "<<pre_condition<<std::endl;
+  // std::cout<<"Pre condition: "<<pre_condition<<std::endl;
   // std::cout<<post_condition<<std::endl;
   expr wp = post_condition;
-  std::cout<<"0: "<<wp<<std::endl;
+  // std::cout<<"Line "<<stmts[0]->opr.lineno<<": "<<wp<<std::endl;
   for(int i=1; i<stmts.size()-1;i++){
     wp = weakest_pre(stmts[i],wp);
-    std::cout<<i<<": "<<wp<<std::endl;
+    // std::cout<<i<<": "<<wp<<std::endl;
   }
+  pretty_print(stmts[stmts.size()-1]->opr.lineno,wp);
+  // std::cout << "Line "<<stmts[stmts.size()-1]->opr.lineno<<": "<<wp<<"\n";
 
   solver s(c);
   s.add(!implies(pre_condition,wp));

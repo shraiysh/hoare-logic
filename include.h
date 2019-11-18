@@ -17,6 +17,7 @@ typedef struct {
   int oper; /* operator */
   int nops; /* number of operands */
   struct nodeTypeTag **op; /* operands */
+  int lineno;
 } oprNodeType;
 
 typedef struct nodeTypeTag {
@@ -29,3 +30,4 @@ typedef struct nodeTypeTag {
 } nodeType;
 
 extern char dtype[26];
+extern int lineno;
