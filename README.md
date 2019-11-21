@@ -79,10 +79,10 @@ post i>0;
 Check ```tests``` for more examples.
 
 ### To Run
+Install [z3 solver](https://github.com/Z3Prover/z3)
 ```bash
-make clean
 make
-./a.out < tests/test2.txt
+./a.out < tests/copy.txt
 ```
 ### Output
 * Proves the correctness of hoare-triple. Provides counter-example if fails.
