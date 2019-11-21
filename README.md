@@ -7,6 +7,14 @@
  * ```pre``` stands for precondition. ```post``` for post condition and ```inv``` for loop invariant
  * ```@``` stands for universal quantifier and ```#``` stands for existensial quantifier
  * Datatypes of free variables need to be mentioned. Arrays are already of int type
+ 
+### Installation
+Install [z3 solver](https://github.com/Z3Prover/z3)
+
+```bash
+make
+./a.out < tests/copy.txt
+```
 
 #### Valid Hoare Triples
 
@@ -78,12 +86,6 @@ post i>0;
 
 Check ```tests``` for more examples.
 
-### To Run
-Install [z3 solver](https://github.com/Z3Prover/z3)
-```bash
-make
-./a.out < tests/copy.txt
-```
 ### Output
 * Proves the correctness of hoare-triple. Provides counter-example if fails.
 
